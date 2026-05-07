@@ -5,6 +5,7 @@ This folder contains repo bootstrap, dashboard, CMS, R2, SQL, and deployment hel
 ## Scripts
 
 - `build_full_dashboard.py`
+- `collect_python_scripts.py`
 - `generate_full_cms_sql.py`
 - `upgrade_header_footer_auth.py`
 - `wire_r2_website_bucket.py`
