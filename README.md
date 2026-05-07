@@ -1,242 +1,213 @@
-Build a production-ready multi-page Vite + React app for Connor McNeely and Leadership Legacy Digital.
+# Leadership Legacy Digital
 
-The app should feel like a premium technical founder portfolio plus AI engineering studio, not a generic agency template.
+Production-ready Vite + React public website and CMS dashboard for Connor McNeely and Leadership Legacy Digital.
 
-Brand positioning:
-- Connor McNeely is a Mechanical Engineer × AI Developer.
-- Leadership Legacy Digital is the delivery brand for AI systems, automation, CAD workflows, RAG systems, and full-stack applications.
-- Core message: engineering-grade AI systems for technical businesses.
-- Visual tone: dark premium SaaS, engineering blueprint, AI neural systems, industrial precision, clean founder-led trust.
+This repo is the working foundation for:
 
-Implement this as a modular Vite/React app with:
-- React Router
-- Clean file tree under src/
-- Data-driven content files under src/data/
-- Config-driven nav, SEO, services, and brand tokens
-- Reusable layouts
-- Reusable UI components
-- Fully responsive design
-- Reduced-motion fallbacks
-- Accessible buttons, forms, menus, and headings
-- No stubs or placeholder-only components
-- No emoji usage in UI copy
+- Connor McNeely’s premium technical founder portfolio
+- Leadership Legacy Digital’s AI engineering studio website
+- A password-protected CMS dashboard
+- Cloudflare Worker deployment
+- R2-backed assets and code snapshots
+- D1-backed CMS runtime
+- Supabase-backed analytics, RAG, evals, and model routing telemetry
+- AI provider routing across OpenAI, Anthropic, Gemini, Workers AI, local Llama/Ollama, and future tool providers
 
-Required routes:
-/
- /about
- /services
- /services/ai-engineering
- /services/rag-systems
- /services/full-stack-apps
- /services/cad-automation
- /services/cad-to-video
- /services/business-automation
- /services/consulting
- /work
- /work/mechassist-ai
- /work/openclaw
- /work/evergrow-landscaping
- /work/ai-meal-planner
- /work/engineercad
- /resources
- /resources/engineering-ai-playbook
- /resources/rag-readiness-checklist
- /resources/automation-roi
- /contact
- /privacy
- /terms
+## Current Positioning
 
-Use these directories:
-src/components/core
-src/components/ui
-src/components/visual
-src/components/sections
-src/components/services
-src/components/cases
-src/components/forms
-src/components/agent
-src/pages
-src/pages/services
-src/pages/work
-src/pages/resources
-src/pages/legal
-src/data
-src/config
-src/hooks
-src/lib
-src/styles
-public/images
-public/models
-public/downloads
-docs
-scripts
+```txt
+Connor McNeely
+Mechanical Engineer × AI Developer
 
-Create:
-- Header with dropdown nav and mobile menu
-- Footer with Connor + Leadership Legacy positioning
-- Homepage with hero, services, case studies, founder story, process, CTA, FAQ
-- Services overview and individual service pages
-- Work overview and individual case study pages
-- About page focused on Connor’s engineering-to-AI story
-- Contact page with project intake form
-- Resources landing and resource pages
-- Legal pages
-- SEO metadata per page
-- Sitemap generation script
-- Strong responsive CSS system using tokens.css
+Leadership Legacy Digital
+Engineering-grade AI systems for technical businesses.
+```
 
-Brand tokens:
-Background: #070b12
-Soft background: #0d1320
-Surface: #111827
-Elevated surface: #172033
-Text: #f5f7fb
-Muted text: #9ca8bd
-Primary: #38bdf8
-Primary strong: #0ea5e9
-Accent: #22c55e
-Warm accent: #f59e0b
-Border: rgba(148, 163, 184, 0.18)
-Glass: rgba(15, 23, 42, 0.72)
+## Live Development URL
 
-Typography:
-Display: Satoshi or Inter fallback
-Body: Inter
-Mono: JetBrains Mono
+```txt
+https://leadership-legacy.meauxbility.workers.dev/
+```
 
-Motion:
-- subtle scroll reveals
-- blueprint grid movement
-- card lift hover
-- AI node pulse
-- header blur on scroll
-- respect prefers-reduced-motion
+Dashboard:
 
-The app should be polished enough to deploy as a real client-facing site. connor-leadershiplegacy-app/
+```txt
+https://leadership-legacy.meauxbility.workers.dev/dashboard
+```
+
+Current concept password:
+
+```txt
+1234
+```
+
+This password gate is only for demo/concept review. Production should use Cloudflare Access, Supabase Auth, or Worker-backed secure sessions.
+
+## Current Repo Structure
+
+```txt
+leadership-legacy/
+├── index.html
+├── dashboard.html
+├── wrangler.jsonc
+├── vite.config.js
 ├── src/
 │   ├── public-app/
-│   │   ├── main.jsx
-│   │   ├── App.jsx
-│   │   └── routes.jsx
-│   │
 │   ├── dashboard/
-│   │   ├── main.jsx
-│   │   ├── DashboardApp.jsx
-│   │   ├── dashboard.routes.jsx
-│   │   ├── dashboard.config.js
-│   │   ├── dashboard.css
-│   │   │
-│   │   ├── layouts/
-│   │   │   ├── DashboardShell.jsx
-│   │   │   ├── EditorLayout.jsx
-│   │   │   ├── PreviewLayout.jsx
-│   │   │   └── AuthLayout.jsx
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── DashboardHome.jsx
-│   │   │   ├── CMSPages.jsx
-│   │   │   ├── CMSPageEditor.jsx
-│   │   │   ├── Sections.jsx
-│   │   │   ├── MediaLibrary.jsx
-│   │   │   ├── CaseStudies.jsx
-│   │   │   ├── CaseStudyEditor.jsx
-│   │   │   ├── Services.jsx
-│   │   │   ├── ServiceEditor.jsx
-│   │   │   ├── Leads.jsx
-│   │   │   ├── LeadDetail.jsx
-│   │   │   ├── IntakeForms.jsx
-│   │   │   ├── Analytics.jsx
-│   │   │   ├── Settings.jsx
-│   │   │   ├── BrandSettings.jsx
-│   │   │   ├── NavigationSettings.jsx
-│   │   │   ├── SEOSettings.jsx
-│   │   │   ├── Publishing.jsx
-│   │   │   └── NotFoundDashboard.jsx
-│   │   │
-│   │   ├── components/
-│   │   │   ├── shell/
-│   │   │   │   ├── DashboardSidebar.jsx
-│   │   │   │   ├── DashboardTopbar.jsx
-│   │   │   │   ├── CommandMenu.jsx
-│   │   │   │   ├── QuickActions.jsx
-│   │   │   │   └── SaveStatus.jsx
-│   │   │   │
-│   │   │   ├── editor/
-│   │   │   │   ├── LivePageEditor.jsx
-│   │   │   │   ├── SectionTree.jsx
-│   │   │   │   ├── SectionInspector.jsx
-│   │   │   │   ├── FieldRenderer.jsx
-│   │   │   │   ├── RichTextEditor.jsx
-│   │   │   │   ├── CodeBlockEditor.jsx
-│   │   │   │   ├── SEOInspector.jsx
-│   │   │   │   ├── StyleInspector.jsx
-│   │   │   │   ├── PublishPanel.jsx
-│   │   │   │   ├── VersionHistory.jsx
-│   │   │   │   ├── PreviewFrame.jsx
-│   │   │   │   ├── SplitPreview.jsx
-│   │   │   │   └── DevicePreviewToggle.jsx
-│   │   │   │
-│   │   │   ├── media/
-│   │   │   │   ├── MediaUploader.jsx
-│   │   │   │   ├── MediaGrid.jsx
-│   │   │   │   ├── MediaDetailDrawer.jsx
-│   │   │   │   ├── AssetPicker.jsx
-│   │   │   │   └── ImageOptimizerPanel.jsx
-│   │   │   │
-│   │   │   ├── tables/
-│   │   │   │   ├── DataTable.jsx
-│   │   │   │   ├── TableToolbar.jsx
-│   │   │   │   ├── StatusBadge.jsx
-│   │   │   │   └── EmptyState.jsx
-│   │   │   │
-│   │   │   ├── forms/
-│   │   │   │   ├── DashboardInput.jsx
-│   │   │   │   ├── DashboardTextarea.jsx
-│   │   │   │   ├── DashboardSelect.jsx
-│   │   │   │   ├── SlugField.jsx
-│   │   │   │   ├── JsonField.jsx
-│   │   │   │   └── FormBuilder.jsx
-│   │   │   │
-│   │   │   └── preview/
-│   │   │       ├── PublicPageRenderer.jsx
-│   │   │       ├── SectionRenderer.jsx
-│   │   │       ├── DraftPreviewBanner.jsx
-│   │   │       └── RealtimePreviewBridge.jsx
-│   │   │
-│   │   ├── hooks/
-│   │   │   ├── useDashboardAuth.js
-│   │   │   ├── useAutosave.js
-│   │   │   ├── useRealtimePreview.js
-│   │   │   ├── useVersionHistory.js
-│   │   │   ├── useDirtyState.js
-│   │   │   └── useMediaLibrary.js
-│   │   │
-│   │   ├── lib/
-│   │   │   ├── dashboardApi.js
-│   │   │   ├── cmsClient.js
-│   │   │   ├── sectionRegistry.js
-│   │   │   ├── validators.js
-│   │   │   ├── publishing.js
-│   │   │   ├── previewBus.js
-│   │   │   └── permissions.js
-│   │   │
-│   │   └── data/
-│   │       ├── dashboardNav.js
-│   │       ├── sectionSchemas.js
-│   │       ├── fieldSchemas.js
-│   │       └── defaultPages.js
-│   │
+│   ├── worker/
 │   ├── shared/
-│   │   ├── brand/
-│   │   │   ├── tokens.css
-│   │   │   ├── brand.config.js
-│   │   │   └── theme.js
-│   │   ├── components/
-│   │   ├── data/
-│   │   └── lib/
-│   │
-│   └── styles/
-│
-├── dashboard.html
-├── index.html
-└── vite.config.js 
+│   ├── styles/
+│   ├── components/
+│   ├── data/
+│   └── config/
+├── sql/
+│   ├── d1/
+│   └── supabase/
+├── docs/
+└── scripts/
+```
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+Public app:
+
+```txt
+http://localhost:5173/
+```
+
+Dashboard MPA entry:
+
+```txt
+http://localhost:5173/dashboard.html
+```
+
+Cloudflare Worker route after deploy:
+
+```txt
+/dashboard
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Deploy
+
+```bash
+npm run deploy
+```
+
+## Environment Philosophy
+
+Never put API keys in React, public files, dashboard data files, or `.env` files that are committed.
+
+Production secrets belong in:
+
+```txt
+Cloudflare Worker secrets
+Supabase secrets
+Provider dashboards
+Local uncommitted .env files
+```
+
+Cloudflare secret pattern:
+
+```bash
+npx wrangler secret put OPENAI_API_KEY
+npx wrangler secret put ANTHROPIC_API_KEY
+npx wrangler secret put GEMINI_API_KEY
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
+```
+
+## Owner Note
+
+Sam has temporarily installed an OpenAI API key so development can continue until Connor installs his own key.
+
+Once Connor has his own OpenAI account/key, replace the Cloudflare Worker secret:
+
+```bash
+npx wrangler secret put OPENAI_API_KEY
+npm run deploy
+```
+
+Do not commit either Sam’s or Connor’s key.
+
+## Main Setup Guide
+
+Read this first:
+
+```txt
+docs/CONNECTORS_SETUP_GUIDE.md
+```
+
+## Checklist
+
+Use this checklist during Connor handoff:
+
+```txt
+docs/CONNOR_HANDOFF_CHECKLIST.md
+```
+
+## Database SQL
+
+D1 CMS runtime:
+
+```txt
+sql/d1/010_full_cms_runtime.sql
+sql/d1/011_full_cms_runtime_triggers.sql
+sql/d1/012_full_cms_seed_content.sql
+```
+
+Supabase analytics/RAG/runtime telemetry:
+
+```txt
+sql/supabase/010_full_cms_analytics_rag.sql
+sql/supabase/011_full_cms_functions.sql
+sql/supabase/012_full_cms_seed.sql
+```
+
+## R2
+
+Current bucket:
+
+```txt
+leadership-legacy
+```
+
+Current Worker binding:
+
+```txt
+WEBSITE
+```
+
+R2 docs:
+
+```txt
+docs/R2_BUCKET.md
+```
+
+## Scripts
+
+```txt
+scripts/build_full_dashboard.py
+scripts/collect_python_scripts.py
+scripts/generate_full_cms_sql.py
+scripts/generate_connor_onboarding_docs.py
+scripts/upgrade_header_footer_auth.py
+scripts/wire_r2_website_bucket.py
+```
+
+Refresh script index:
+
+```bash
+python3 scripts/collect_python_scripts.py
+```
