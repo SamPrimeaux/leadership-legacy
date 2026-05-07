@@ -27,7 +27,7 @@ export default function DashboardApp() {
         <Route path="/dashboard/leads" element={<AgentIDE routeView="analytics" />} />
 
         <Route path="/dashboard/login" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<AgentIDE routeView="agent" />} />
+        <Route path="*" element={<AgentIDE routeView="home" />} />
       </Routes>
     </DashboardAuthGate>
   );

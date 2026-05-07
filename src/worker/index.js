@@ -26,13 +26,38 @@ async function readJson(request) {
   }
 }
 
+function cleanOpenAIKey(value) {
+  if (!value) return "";
+  let key = String(value).trim();
+
+  if (key.startsWith("OPENAI_API_KEY=")) {
+    key = key.replace(/^OPENAI_API_KEY=/, "").trim();
+  }
+
+  key = key.replace(/^["']|["']$/g, "").trim();
+  return key;
+}
+
+function keyShape(value) {
+  const raw = String(value || "");
+  const cleaned = cleanOpenAIKey(raw);
+  return {
+    exists: Boolean(raw),
+    rawLength: raw.length,
+    cleanedLength: cleaned.length,
+    startsWithEnvName: raw.trim().startsWith("OPENAI_API_KEY="),
+    hasQuotes: /^["']|["']$/.test(raw.trim()),
+    prefix: cleaned.slice(0, 7),
+    suffix: cleaned.slice(-4)
+  };
+}
+
 function extractResponseText(data) {
   if (typeof data.output_text === "string" && data.output_text.trim()) {
     return data.output_text;
   }
 
   const chunks = [];
-
   for (const item of data.output || []) {
     for (const content of item.content || []) {
       if (content.type === "output_text" && content.text) chunks.push(content.text);
@@ -56,7 +81,9 @@ function isLikelyTextKey(key) {
 }
 
 async function callOpenAI(env, payload) {
-  if (!env.OPENAI_API_KEY) {
+  const apiKey = cleanOpenAIKey(env.OPENAI_API_KEY);
+
+  if (!apiKey) {
     return {
       ok: false,
       status: 500,
@@ -68,7 +95,7 @@ async function callOpenAI(env, payload) {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${env.OPENAI_API_KEY}`
+      authorization: `Bearer ${apiKey}`
     },
     body: JSON.stringify(payload)
   });
@@ -116,22 +143,53 @@ export default {
         ok: true,
         app: "leadership-legacy",
         worker: "online",
-        openaiConfigured: Boolean(env.OPENAI_API_KEY),
+        openaiConfigured: Boolean(cleanOpenAIKey(env.OPENAI_API_KEY)),
         r2Binding: Boolean(env.WEBSITE),
         timestamp: new Date().toISOString()
+      });
+    }
+
+    if (pathname === "/api/openai/diagnostics") {
+      return json({
+        ok: true,
+        openaiKey: keyShape(env.OPENAI_API_KEY),
+        defaultModel: env.OPENAI_DEFAULT_MODEL || "gpt-5.4-mini",
+        note: "This endpoint intentionally exposes only key shape, never the full key."
+      });
+    }
+
+    if (pathname === "/api/openai/test") {
+      const model = url.searchParams.get("model") || env.OPENAI_DEFAULT_MODEL || "gpt-5.4-mini";
+      const result = await callOpenAI(env, {
+        model,
+        instructions: "Reply with exactly: ok",
+        input: "health check",
+        max_output_tokens: 20
+      });
+
+      if (!result.ok) {
+        return json(result, result.status || 500);
+      }
+
+      return json({
+        ok: true,
+        model,
+        text: result.text,
+        responseId: result.data?.id || null,
+        usage: result.data?.usage || null
       });
     }
 
     if (pathname === "/api/ai/providers") {
       return json({
         ok: true,
-        openaiConfigured: Boolean(env.OPENAI_API_KEY),
+        openaiConfigured: Boolean(cleanOpenAIKey(env.OPENAI_API_KEY)),
         providers: [
           {
             key: "openai",
             displayName: "OpenAI",
             secretName: "OPENAI_API_KEY",
-            status: env.OPENAI_API_KEY ? "configured" : "missing_secret",
+            status: cleanOpenAIKey(env.OPENAI_API_KEY) ? "configured" : "missing_secret",
             models: ["gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.4"]
           },
           {
@@ -215,7 +273,7 @@ export default {
 
     if (pathname === "/api/openai/code" && request.method === "POST") {
       const body = await readJson(request);
-      const model = body.model || "gpt-5.4-mini";
+      const model = body.model || env.OPENAI_DEFAULT_MODEL || "gpt-5.4-mini";
       const filename = body.filename || "routes/services.jsx";
       const language = body.language || "javascript";
       const code = body.code || "";
@@ -271,11 +329,7 @@ export default {
       try {
         readme = await readR2Text(env, "README.txt");
       } catch (error) {
-        return json({
-          ok: false,
-          binding: "WEBSITE",
-          error: error.message
-        }, 500);
+        return json({ ok: false, binding: "WEBSITE", error: error.message }, 500);
       }
 
       return json({
@@ -311,11 +365,7 @@ export default {
       const key = url.searchParams.get("key") || "";
       if (!key) return json({ ok: false, error: "Missing key." }, 400);
       if (!isLikelyTextKey(key)) {
-        return json({
-          ok: false,
-          error: "This object does not look like a text/code file.",
-          key
-        }, 415);
+        return json({ ok: false, error: "This object does not look like a text/code file.", key }, 415);
       }
 
       const object = await env.WEBSITE.get(key);

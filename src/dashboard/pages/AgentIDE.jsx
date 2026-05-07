@@ -11,7 +11,6 @@ import {
   Code2,
   Copy,
   Database,
-  ExternalLink,
   Eye,
   FileCode2,
   FilePlus2,
@@ -23,28 +22,20 @@ import {
   HardDrive,
   Home,
   Image,
-  Inbox,
-  KeyRound,
-  Layers,
   Mail,
   MoreHorizontal,
   RefreshCcw,
   Search,
   Send,
   Settings,
-  ShieldCheck,
   Sparkles,
   TerminalSquare,
   Upload,
   Wrench,
   X
 } from "lucide-react";
-import {
-  commandPresets,
-  dashboardViews,
-  localTree,
-  workspaceFiles
-} from "../data/agentIdeFiles.js";
+import { dashboardPageConfig } from "../data/dashboardPages.js";
+import { commandPresets, localTree, workspaceFiles } from "../data/agentIdeFiles.js";
 
 function getLanguageFromKey(key = "") {
   if (key.endsWith(".js") || key.endsWith(".jsx")) return "javascript";
@@ -61,7 +52,7 @@ function getLanguageFromKey(key = "") {
 function useResizablePanels() {
   const [explorerWidth, setExplorerWidth] = useState(() => Number(localStorage.getItem("ll-explorer-width") || 250));
   const [agentWidth, setAgentWidth] = useState(() => Number(localStorage.getItem("ll-agent-width") || 340));
-  const [terminalHeight, setTerminalHeight] = useState(() => Number(localStorage.getItem("ll-terminal-height") || 260));
+  const [terminalHeight, setTerminalHeight] = useState(() => Number(localStorage.getItem("ll-terminal-height") || 250));
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -69,6 +60,7 @@ function useResizablePanels() {
 
   function beginDrag(type, startEvent) {
     startEvent.preventDefault();
+
     const startX = startEvent.clientX;
     const startY = startEvent.clientY;
     const startExplorer = explorerWidth;
@@ -77,19 +69,25 @@ function useResizablePanels() {
 
     function onMove(event) {
       if (type === "explorer") {
-        const next = clamp(startExplorer + event.clientX - startX, 190, 430);
+        const next = clamp(startExplorer + event.clientX - startX, 190, 440);
         setExplorerWidth(next);
         localStorage.setItem("ll-explorer-width", String(next));
       }
 
       if (type === "agent") {
-        const next = clamp(startAgent - (event.clientX - startX), 280, 560);
+        // Natural behavior:
+        // drag divider left -> agent gets wider
+        // drag divider right -> agent gets narrower
+        const next = clamp(startAgent + (startX - event.clientX), 280, 620);
         setAgentWidth(next);
         localStorage.setItem("ll-agent-width", String(next));
       }
 
       if (type === "terminal") {
-        const next = clamp(startTerminal - (event.clientY - startY), 160, 520);
+        // Natural behavior:
+        // drag divider up -> terminal gets taller
+        // drag divider down -> terminal gets shorter
+        const next = clamp(startTerminal + (startY - event.clientY), 150, 540);
         setTerminalHeight(next);
         localStorage.setItem("ll-terminal-height", String(next));
       }
@@ -106,12 +104,7 @@ function useResizablePanels() {
     window.addEventListener("mouseup", onUp);
   }
 
-  return {
-    explorerWidth,
-    agentWidth,
-    terminalHeight,
-    beginDrag
-  };
+  return { explorerWidth, agentWidth, terminalHeight, beginDrag };
 }
 
 function ActivityRail({ routeView, terminalOpen, setTerminalOpen }) {
@@ -149,16 +142,7 @@ function ActivityRail({ routeView, terminalOpen, setTerminalOpen }) {
   );
 }
 
-function Explorer({
-  files,
-  activeFile,
-  setActiveFile,
-  r2Objects,
-  loadR2Objects,
-  openR2Object,
-  r2Loading,
-  githubStatus
-}) {
+function Explorer({ files, activeFile, setActiveFile, r2Objects, loadR2Objects, openR2Object, r2Loading, githubStatus }) {
   const [githubOpen, setGithubOpen] = useState(true);
   const [driveOpen, setDriveOpen] = useState(true);
 
@@ -218,6 +202,7 @@ function Explorer({
             <HardDrive size={14} />
             <span>leadership-legacy</span>
           </div>
+
           <div className="ia-r2-actions">
             <button onClick={() => loadR2Objects("")}>
               <RefreshCcw size={12} />
@@ -229,6 +214,7 @@ function Explorer({
             </button>
             <a href="/dashboard/storage">Open</a>
           </div>
+
           <div className="ia-r2-list">
             {r2Objects.length === 0 ? (
               <span>Click refresh to load real R2 objects.</span>
@@ -249,6 +235,7 @@ function Explorer({
           <span>GITHUB SYNC</span>
           <ChevronDown size={14} />
         </button>
+
         {githubOpen ? (
           <div className="ia-service-card">
             <div className="ia-orb"><GitBranch size={44} /></div>
@@ -265,6 +252,7 @@ function Explorer({
           <span>GOOGLE DRIVE</span>
           <ChevronDown size={14} />
         </button>
+
         {driveOpen ? (
           <div className="ia-service-card">
             <div className="ia-orb"><Cloud size={44} /></div>
@@ -279,13 +267,13 @@ function Explorer({
 }
 
 function Topbar({ routeView }) {
-  const view = dashboardViews[routeView] || dashboardViews.agent;
+  const config = dashboardPageConfig[routeView] || dashboardPageConfig.agent || dashboardPageConfig.home;
 
   return (
     <header className="ia-topbar">
       <div className="ia-search">
         <Search size={14} />
-        <input placeholder={`workspace: Leadership Legacy / ${view.label}`} aria-label="Workspace search" />
+        <input placeholder={`workspace: Leadership Legacy / ${config.eyebrow}`} aria-label="Workspace search" />
         <kbd>Cmd+K</kbd>
       </div>
 
@@ -300,9 +288,7 @@ function Topbar({ routeView }) {
   );
 }
 
-function EditorTabs({ activeFile, file, routeView }) {
-  const view = dashboardViews[routeView] || dashboardViews.agent;
-
+function EditorTabs({ activeFile, file }) {
   return (
     <div className="ia-tabs">
       <button className="active">
@@ -310,32 +296,22 @@ function EditorTabs({ activeFile, file, routeView }) {
         <span>{activeFile.split("/").pop()}</span>
         <X size={13} />
       </button>
-      <a href="/dashboard/storage">
-        <HardDrive size={14} />
-        <span>Storage</span>
-      </a>
-      <a href="/dashboard/mcp">
-        <Wrench size={14} />
-        <span>MCP</span>
-      </a>
-      <a href="/dashboard/learn">
-        <GraduationCap size={14} />
-        <span>Learn</span>
-      </a>
+      <a href="/dashboard/storage"><HardDrive size={14} /><span>Storage</span></a>
+      <a href="/dashboard/mcp"><Wrench size={14} /><span>MCP</span></a>
+      <a href="/dashboard/learn"><GraduationCap size={14} /><span>Learn</span></a>
       <div className="ia-file-meta">
-        <span>{view.tab}</span>
         <span>{file.type}</span>
+        <span>UTF-8</span>
         <span>{file.language}</span>
       </div>
     </div>
   );
 }
 
-function CodeEditor({ activeFile, file, updateFile, routeView }) {
+function CodeEditor({ activeFile, file, updateFile }) {
   return (
     <section className="ia-editor">
-      <EditorTabs activeFile={activeFile} file={file} routeView={routeView} />
-
+      <EditorTabs activeFile={activeFile} file={file} />
       <div className="ia-editor-frame">
         <Editor
           height="100%"
@@ -398,7 +374,6 @@ function TerminalDock({ open, height, beginDrag }) {
     term.write("PS leadership-legacy> ");
 
     terminalRef.current = term;
-
     const onResize = () => fit.fit();
     window.addEventListener("resize", onResize);
 
@@ -451,181 +426,114 @@ function TerminalDock({ open, height, beginDrag }) {
   );
 }
 
-function ViewPanel({ routeView, r2Objects, loadR2Objects, openR2Object, providerStatus }) {
-  const view = dashboardViews[routeView] || dashboardViews.agent;
+function DashboardPage({ routeView, r2Objects, loadR2Objects, openR2Object, providerStatus }) {
+  const config = dashboardPageConfig[routeView] || dashboardPageConfig.home;
 
-  if (routeView === "agent") return null;
-
-  if (routeView === "home") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">Dashboard</p>
-        <h2>{view.title}</h2>
-        <p>{view.subtitle}</p>
-        <div className="ia-metric-grid">
-          <article><strong>OpenAI</strong><span>{providerStatus?.openaiConfigured ? "Configured" : "Missing"}</span></article>
-          <article><strong>R2</strong><span>{r2Objects.length} loaded objects</span></article>
-          <article><strong>Routes</strong><span>8 dashboard sections</span></article>
-          <article><strong>Tests</strong><span>Playwright ready</span></article>
-        </div>
-      </section>
-    );
+  function handlePrimary() {
+    if (config.primaryActionType === "r2-refresh") {
+      loadR2Objects("");
+    }
+    if (config.primaryActionType === "provider-check") {
+      window.location.reload();
+    }
   }
 
-  if (routeView === "storage") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">Storage</p>
-        <h2>Cloudflare R2 browser</h2>
-        <p>Load real objects from the `leadership-legacy` R2 bucket. Text/code-like files open directly into Monaco.</p>
-        <div className="ia-toolbar">
-          <button onClick={() => loadR2Objects("")}><RefreshCcw size={14} /> Load bucket root</button>
-          <button onClick={() => loadR2Objects("cms/")}><Database size={14} /> cms/</button>
-          <button onClick={() => loadR2Objects("assets/")}><Image size={14} /> assets/</button>
-          <button onClick={() => loadR2Objects("snapshots/")}><Layers size={14} /> snapshots/</button>
-        </div>
-        <div className="ia-object-table">
-          {r2Objects.map((object) => (
-            <button key={object.key} onClick={() => openR2Object(object.key)}>
-              <span>{object.key}</span>
-              <small>{object.size ? `${object.size} bytes` : "object"}</small>
-            </button>
-          ))}
-        </div>
-      </section>
-    );
-  }
+  return (
+    <section className={`ia-page ia-page-${routeView}`}>
+      <div className="ia-page-hero">
+        <p className="ia-view-kicker">{config.eyebrow}</p>
+        <h1>{config.title}</h1>
+        <p>{config.body}</p>
 
-  if (routeView === "settings") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">Settings</p>
-        <h2>Provider and integration readiness</h2>
-        <p>{view.subtitle}</p>
-        <div className="ia-settings-grid">
-          {[
-            ["OpenAI", providerStatus?.openaiConfigured ? "configured" : "missing", "OPENAI_API_KEY"],
-            ["Anthropic", "pending Connor key", "ANTHROPIC_API_KEY"],
-            ["Gemini", "planned", "GEMINI_API_KEY"],
-            ["Resend", "planned", "RESEND_API_KEY"],
-            ["GitHub", "OAuth/App planned", "GITHUB_CLIENT_ID"],
-            ["Google", "Drive/Gmail OAuth planned", "GOOGLE_CLIENT_ID"],
-            ["Supabase", "planned", "SUPABASE_SERVICE_ROLE_KEY"],
-            ["AWS", "optional", "AWS_ACCESS_KEY_ID"]
-          ].map(([name, status, secret]) => (
-            <article key={name}>
-              <ShieldCheck size={18} />
-              <strong>{name}</strong>
-              <span>{status}</span>
-              <code>{secret}</code>
-            </article>
-          ))}
+        <div className="ia-page-actions">
+          {config.primaryHref ? (
+            <a className="ia-primary-link" href={config.primaryHref}>{config.primaryAction}</a>
+          ) : (
+            <button className="ia-primary-link" onClick={handlePrimary}>{config.primaryAction}</button>
+          )}
+          {config.secondaryHref ? (
+            <a className="ia-secondary-link" href={config.secondaryHref}>{config.secondaryAction}</a>
+          ) : null}
         </div>
-      </section>
-    );
-  }
+      </div>
 
-  if (routeView === "analytics") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">Analytics</p>
-        <h2>Telemetry overview</h2>
-        <p>{view.subtitle}</p>
-        <div className="ia-metric-grid">
-          <article><strong>2,188</strong><span>seed page views</span></article>
-          <article><strong>1</strong><span>lead in queue</span></article>
-          <article><strong>0</strong><span>critical errors</span></article>
-          <article><strong>OpenAI</strong><span>provider live</span></article>
+      {config.cards ? (
+        <div className="ia-card-grid">
+          {config.cards.map((card) => {
+            const Icon = card.icon;
+            let value = card.value;
+            if (card.label === "OpenAI") value = providerStatus?.openaiConfigured ? "Configured" : "Missing";
+            return (
+              <article key={card.label} className="ia-dashboard-card">
+                <Icon size={18} />
+                <span>{card.label}</span>
+                <strong>{value}</strong>
+                <p>{card.body}</p>
+              </article>
+            );
+          })}
         </div>
-      </section>
-    );
-  }
+      ) : null}
 
-  if (routeView === "learn") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">Learn</p>
-        <h2>Connor study path</h2>
-        <p>{view.subtitle}</p>
+      {routeView === "storage" ? (
+        <div className="ia-storage-browser">
+          <div className="ia-toolbar">
+            <button onClick={() => loadR2Objects("")}><RefreshCcw size={14} /> Root</button>
+            <button onClick={() => loadR2Objects("cms/")}><Database size={14} /> cms/</button>
+            <button onClick={() => loadR2Objects("assets/")}><Image size={14} /> assets/</button>
+            <button onClick={() => loadR2Objects("snapshots/")}><HardDrive size={14} /> snapshots/</button>
+          </div>
+
+          <div className="ia-object-table">
+            {r2Objects.map((object) => (
+              <button key={object.key} onClick={() => openR2Object(object.key)}>
+                <span>{object.key}</span>
+                <small>{object.size ? `${object.size} bytes` : "object"}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {config.modules ? (
         <div className="ia-learning-list">
-          {[
-            "Run the app locally with PowerShell",
-            "Deploy the Worker",
-            "Understand R2, D1, KV, and Durable Objects",
-            "Connect OpenAI, Anthropic, Gemini, Resend",
-            "Connect GitHub App/OAuth",
-            "Connect Google Drive and Gmail OAuth",
-            "Run Playwright and read failures",
-            "Use the rubric to score readiness"
-          ].map((item, index) => (
+          {config.modules.map((item, index) => (
             <label key={item}>
               <input type="checkbox" />
               <span>{index + 1}. {item}</span>
             </label>
           ))}
         </div>
-      </section>
-    );
-  }
+      ) : null}
 
-  if (routeView === "mail") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">Mail</p>
-        <h2>Gmail + Resend workflows</h2>
-        <p>{view.subtitle}</p>
-        <div className="ia-settings-grid">
-          <article><Mail size={18} /><strong>Gmail OAuth</strong><span>Thread read + draft compose</span><code>/api/oauth/google/start</code></article>
-          <article><Inbox size={18} /><strong>Lead Inbox</strong><span>Inbound project requests</span><code>/api/forms/contact</code></article>
-          <article><Send size={18} /><strong>Resend</strong><span>Transactional email</span><code>RESEND_API_KEY</code></article>
-          <article><ShieldCheck size={18} /><strong>Approval Gate</strong><span>No auto-send without approval</span><code>required</code></article>
-        </div>
-      </section>
-    );
-  }
-
-  if (routeView === "mcp") {
-    return (
-      <section className="ia-view-panel">
-        <p className="ia-view-kicker">MCP</p>
-        <h2>Tools registry</h2>
-        <p>{view.subtitle}</p>
+      {config.tools ? (
         <div className="ia-tool-grid">
-          {[
-            "github.listRepos",
-            "github.getFile",
-            "github.commitFile",
-            "r2.listObjects",
-            "r2.getObject",
-            "d1.query",
-            "openai.codeAction",
-            "anthropic.review",
-            "gmail.createDraft",
-            "drive.importFile",
-            "playwright.runSmoke",
-            "resend.sendEmail"
-          ].map((tool) => (
-            <article key={tool}>
+          {config.tools.map((tool) => (
+            <article key={tool.key}>
               <Wrench size={15} />
-              <strong>{tool}</strong>
-              <span>approval-aware</span>
+              <strong>{tool.key}</strong>
+              <span>{tool.status}</span>
+              <code>{tool.risk}</code>
             </article>
           ))}
         </div>
-      </section>
-    );
-  }
+      ) : null}
 
-  return (
-    <section className="ia-view-panel">
-      <p className="ia-view-kicker">{view.label}</p>
-      <h2>{view.title}</h2>
-      <p>{view.subtitle}</p>
+      {config.timeline ? (
+        <div className="ia-timeline">
+          {config.timeline.map((item, index) => (
+            <article key={item}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <p>{item}</p>
+            </article>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
 
-function AgentPanel({ activeFile, file, updateFile, routeView }) {
+function AgentPanel({ activeFile, file, updateFile }) {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [chat, setChat] = useState([]);
@@ -682,7 +590,7 @@ function AgentPanel({ activeFile, file, updateFile, routeView }) {
   return (
     <aside className="ia-agent">
       <div className="ia-agent-head">
-        <span>{routeView === "agent" ? "AGENT CONNOR" : "ASSISTANT"}</span>
+        <span>AGENT CONNOR</span>
         <button><MoreHorizontal size={15} /></button>
       </div>
 
@@ -758,7 +666,7 @@ function StatusBar({ activeFile, r2Objects }) {
   );
 }
 
-export function AgentIDE({ initialTerminalOpen = false, routeView = "agent" }) {
+export function AgentIDE({ initialTerminalOpen = false, routeView = "home" }) {
   const [files, setFiles] = useState(workspaceFiles);
   const [activeFile, setActiveFile] = useState("worker/index.js");
   const [terminalOpen, setTerminalOpen] = useState(initialTerminalOpen);
@@ -767,15 +675,10 @@ export function AgentIDE({ initialTerminalOpen = false, routeView = "agent" }) {
   const [providerStatus, setProviderStatus] = useState(null);
   const [githubStatus, setGithubStatus] = useState(null);
 
-  const {
-    explorerWidth,
-    agentWidth,
-    terminalHeight,
-    beginDrag
-  } = useResizablePanels();
+  const { explorerWidth, agentWidth, terminalHeight, beginDrag } = useResizablePanels();
 
   const file = useMemo(() => files[activeFile] || Object.values(files)[0], [files, activeFile]);
-  const showViewPanel = routeView !== "agent";
+  const isAgentRoute = routeView === "agent";
 
   function updateFile(content) {
     setFiles((current) => ({
@@ -801,45 +704,25 @@ export function AgentIDE({ initialTerminalOpen = false, routeView = "agent" }) {
   async function openR2Object(key) {
     const response = await fetch(`/api/r2/text?key=${encodeURIComponent(key)}`);
     const data = await response.json();
-
-    if (!data.ok) {
-      const objectFile = `r2/${key}`;
-      setFiles((current) => ({
-        ...current,
-        [objectFile]: {
-          language: "plaintext",
-          type: "R2",
-          source: "r2",
-          content: `Unable to open ${key}\n\n${data.error || "Object may be binary or unavailable."}`
-        }
-      }));
-      setActiveFile(objectFile);
-      return;
-    }
-
     const objectFile = `r2/${key}`;
+
     setFiles((current) => ({
       ...current,
       [objectFile]: {
-        language: getLanguageFromKey(key),
+        language: data.ok ? getLanguageFromKey(key) : "plaintext",
         type: "R2",
         source: "r2",
-        content: data.text
+        content: data.ok ? data.text : `Unable to open ${key}\n\n${data.error || "Object may be binary or unavailable."}`
       }
     }));
+
     setActiveFile(objectFile);
   }
 
   useEffect(() => {
     loadR2Objects("");
-    fetch("/api/ai/providers")
-      .then((res) => res.json())
-      .then(setProviderStatus)
-      .catch(() => {});
-    fetch("/api/github/status")
-      .then((res) => res.json())
-      .then(setGithubStatus)
-      .catch(() => {});
+    fetch("/api/ai/providers").then((res) => res.json()).then(setProviderStatus).catch(() => {});
+    fetch("/api/github/status").then((res) => res.json()).then(setGithubStatus).catch(() => {});
   }, []);
 
   const gridStyle = {
@@ -847,9 +730,7 @@ export function AgentIDE({ initialTerminalOpen = false, routeView = "agent" }) {
   };
 
   const mainStyle = {
-    gridTemplateColumns: showViewPanel
-      ? `minmax(360px, 0.76fr) minmax(320px, 0.52fr) ${agentWidth}px`
-      : `minmax(0, 1fr) ${agentWidth}px`
+    gridTemplateColumns: isAgentRoute ? `minmax(0, 1fr) ${agentWidth}px` : `minmax(0, 1fr) ${agentWidth}px`
   };
 
   return (
@@ -872,24 +753,26 @@ export function AgentIDE({ initialTerminalOpen = false, routeView = "agent" }) {
       <main className="ia-workspace">
         <Topbar routeView={routeView} />
 
-        <div className={showViewPanel ? "ia-main-grid has-view-panel" : "ia-main-grid"} style={mainStyle}>
+        <div className={isAgentRoute ? "ia-main-grid" : "ia-main-grid page-mode"} style={mainStyle}>
           <div className="ia-center">
-            <CodeEditor activeFile={activeFile} file={file} updateFile={updateFile} routeView={routeView} />
-            <TerminalDock open={terminalOpen} height={terminalHeight} beginDrag={beginDrag} />
+            {isAgentRoute ? (
+              <>
+                <CodeEditor activeFile={activeFile} file={file} updateFile={updateFile} />
+                <TerminalDock open={terminalOpen} height={terminalHeight} beginDrag={beginDrag} />
+              </>
+            ) : (
+              <DashboardPage
+                routeView={routeView}
+                r2Objects={r2Objects}
+                loadR2Objects={loadR2Objects}
+                openR2Object={openR2Object}
+                providerStatus={providerStatus}
+              />
+            )}
           </div>
 
-          {showViewPanel ? (
-            <ViewPanel
-              routeView={routeView}
-              r2Objects={r2Objects}
-              loadR2Objects={loadR2Objects}
-              openR2Object={openR2Object}
-              providerStatus={providerStatus}
-            />
-          ) : null}
-
           <div className="ia-resizer ia-resizer-agent" onMouseDown={(event) => beginDrag("agent", event)} />
-          <AgentPanel activeFile={activeFile} file={file} updateFile={updateFile} routeView={routeView} />
+          <AgentPanel activeFile={activeFile} file={file} updateFile={updateFile} />
         </div>
 
         <StatusBar activeFile={activeFile} r2Objects={r2Objects} />

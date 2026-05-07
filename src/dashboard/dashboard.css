@@ -1149,3 +1149,224 @@ a { color: inherit; text-decoration: none; }
     grid-template-columns: 1fr;
   }
 }
+
+
+    /* Real dashboard pages: do not let Monaco dominate every route */
+    .ia-main-grid.page-mode .ia-center {
+      display: block;
+      overflow: auto;
+      border-right: 1px solid rgba(69, 228, 238, 0.18);
+      background: #041316;
+    }
+
+    .ia-page {
+      min-height: 100%;
+      overflow: auto;
+      padding: clamp(22px, 4vw, 44px);
+      background:
+        radial-gradient(circle at 16% 0%, rgba(32, 227, 240, 0.13), transparent 28rem),
+        radial-gradient(circle at 84% 12%, rgba(83, 244, 207, 0.07), transparent 22rem),
+        linear-gradient(135deg, #041316 0%, #051b1f 48%, #031013 100%);
+    }
+
+    .ia-page-hero {
+      max-width: 920px;
+      margin-bottom: 24px;
+    }
+
+    .ia-page-hero h1 {
+      margin: 0 0 14px;
+      color: #f3feff;
+      font-size: clamp(2.8rem, 7vw, 7rem);
+      line-height: 0.86;
+      letter-spacing: -0.085em;
+    }
+
+    .ia-page-hero p {
+      max-width: 760px;
+      color: #a9e3e8;
+      line-height: 1.7;
+      font-size: clamp(0.94rem, 1.6vw, 1.1rem);
+    }
+
+    .ia-page-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .ia-primary-link,
+    .ia-secondary-link {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0 14px;
+      font-weight: 950;
+      font-size: 0.82rem;
+      border: 1px solid rgba(69, 228, 238, 0.22);
+    }
+
+    .ia-primary-link {
+      color: #031013;
+      background: linear-gradient(135deg, #20e3f0, #53f4cf);
+    }
+
+    .ia-secondary-link {
+      color: #d9fbff;
+      background: rgba(69, 228, 238, 0.08);
+    }
+
+    .ia-card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .ia-dashboard-card {
+      min-width: 0;
+      min-height: 164px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      border: 1px solid rgba(69, 228, 238, 0.15);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(10, 89, 97, 0.22), rgba(3, 16, 19, 0.46));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 70px rgba(0, 0, 0, 0.18);
+      padding: 16px;
+    }
+
+    .ia-dashboard-card svg {
+      color: #20e3f0;
+    }
+
+    .ia-dashboard-card span {
+      color: #86d4dc;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .ia-dashboard-card strong {
+      color: #f3feff;
+      font-size: 1.35rem;
+      letter-spacing: -0.04em;
+    }
+
+    .ia-dashboard-card p {
+      margin: 0;
+      color: #92cfd6;
+      line-height: 1.55;
+      font-size: 0.82rem;
+    }
+
+    .ia-timeline {
+      display: grid;
+      gap: 10px;
+      max-width: 900px;
+    }
+
+    .ia-timeline article {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      border: 1px solid rgba(69, 228, 238, 0.13);
+      border-radius: 14px;
+      background: rgba(3, 16, 19, 0.36);
+      padding: 12px;
+    }
+
+    .ia-timeline span {
+      color: #20e3f0;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-weight: 950;
+    }
+
+    .ia-timeline p {
+      margin: 0;
+      color: #c8f8fc;
+    }
+
+    .ia-storage-browser {
+      margin-top: 22px;
+    }
+
+    .ia-learning-list {
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .ia-learning-list label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid rgba(69, 228, 238, 0.13);
+      border-radius: 14px;
+      background: rgba(3, 16, 19, 0.4);
+      padding: 12px;
+      color: #c8f8fc;
+      line-height: 1.5;
+    }
+
+    .ia-tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .ia-tool-grid article {
+      display: grid;
+      gap: 7px;
+      border: 1px solid rgba(69, 228, 238, 0.13);
+      border-radius: 15px;
+      background: rgba(3, 16, 19, 0.4);
+      padding: 14px;
+    }
+
+    .ia-tool-grid strong {
+      color: #f3feff;
+      font-size: 0.9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ia-tool-grid span {
+      color: #8fc8cf;
+      font-size: 0.78rem;
+    }
+
+    .ia-tool-grid code {
+      color: #20e3f0;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 0.72rem;
+    }
+
+    @media (max-width: 1240px) {
+      .ia-card-grid,
+      .ia-tool-grid,
+      .ia-learning-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .ia-card-grid,
+      .ia-tool-grid,
+      .ia-learning-list {
+        grid-template-columns: 1fr;
+      }
+
+      .ia-page {
+        padding: 24px;
+      }
+    }
+    
