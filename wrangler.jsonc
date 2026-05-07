@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "leadership-legacy",
+  "main": "src/worker/index.js",
+  "compatibility_date": "2026-05-06",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/dashboard",
+      "/dashboard/*",
+      "/api/*",
+      "/services/*",
+      "/work/*",
+      "/resources/*",
+      "/about",
+      "/contact",
+      "/privacy",
+      "/terms"
+    ]
+  },
+  "observability": {
+    "enabled": true
+  }
+}
