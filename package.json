@@ -13,16 +13,15 @@
     "cf:tunnel:help": "node scripts/print-cloudflare-tunnel-help.js"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
+    "@xterm/addon-fit": "latest",
+    "@xterm/xterm": "latest",
+    "lucide-react": "latest",
+    "monaco-editor": "^0.53.0",
     "react": "latest",
     "react-dom": "latest",
     "react-router-dom": "latest",
-    "lucide-react": "latest",
-    "@monaco-editor/react": "latest",
-    "@xterm/xterm": "latest",
-    "@xterm/addon-fit": "latest",
-    "monaco-editor": "latest"
-  },
-  "devDependencies": {}
+    "vite": "latest"
+  }
 }
