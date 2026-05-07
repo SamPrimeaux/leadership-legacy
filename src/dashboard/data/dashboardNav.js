@@ -11,6 +11,9 @@ import {
   Rocket,
   Settings,
   BrainCircuit,
+      TerminalSquare,
+      Code2,
+      Network,
       Database
 } from "lucide-react";
 
@@ -26,6 +29,9 @@ export const dashboardNav = [
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { label: "Publishing", href: "/dashboard/publishing", icon: Rocket },
   { label: "AI Providers", href: "/dashboard/settings/ai-providers", icon: BrainCircuit,
+      TerminalSquare,
+      Code2,
+      Network,
       Database },
   { label: "Settings", href: "/dashboard/settings", icon: Settings }
 ];

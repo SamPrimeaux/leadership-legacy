@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "sitemap": "node scripts/build-sitemap.js",
     "deploy": "npm run build && wrangler deploy",
-    "cf:preview": "npm run build && wrangler dev"
+    "cf:preview": "npm run build && wrangler dev",
+    "cf:tunnel:help": "node scripts/print-cloudflare-tunnel-help.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
@@ -17,7 +18,11 @@
     "react": "latest",
     "react-dom": "latest",
     "react-router-dom": "latest",
-    "lucide-react": "latest"
+    "lucide-react": "latest",
+    "@monaco-editor/react": "latest",
+    "@xterm/xterm": "latest",
+    "@xterm/addon-fit": "latest",
+    "monaco-editor": "latest"
   },
   "devDependencies": {}
 }

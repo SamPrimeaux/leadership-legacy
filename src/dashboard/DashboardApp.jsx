@@ -14,6 +14,7 @@ import { Publishing } from "./pages/Publishing.jsx";
 import { Settings } from "./pages/Settings.jsx";
 import { AIProviders } from "./pages/AIProviders.jsx";
 import { R2Storage } from "./pages/R2Storage.jsx";
+import { DevCockpit } from "./pages/DevCockpit.jsx";
 import { NotFoundDashboard } from "./pages/NotFoundDashboard.jsx";
 
 export default function DashboardApp() {
@@ -27,6 +28,9 @@ export default function DashboardApp() {
           <Route path="/dashboard/sections" element={<CMSPages />} />
           <Route path="/dashboard/media" element={<MediaLibrary />} />
           <Route path="/dashboard/storage" element={<R2Storage />} />
+              <Route path="/dashboard/dev" element={<DevCockpit view="overview" />} />
+              <Route path="/dashboard/dev/editor" element={<DevCockpit view="editor" />} />
+              <Route path="/dashboard/dev/tunnel" element={<DevCockpit view="tunnel" />} />
           <Route path="/dashboard/case-studies" element={<CaseStudies />} />
           <Route path="/dashboard/case-studies/:caseStudyId" element={<CaseStudies />} />
           <Route path="/dashboard/services" element={<Services />} />
