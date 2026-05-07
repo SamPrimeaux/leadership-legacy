@@ -21,6 +21,7 @@ jobs:
     env:
       R2_BUCKET: leadership-legacy
       R2_KEEP_DEPLOYMENTS: "3"
+      LIVE_WORKER_URL: https://leadership-legacy.meauxbility.workers.dev
 
     steps:
       - name: Checkout
@@ -59,6 +60,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           R2_BUCKET: leadership-legacy
           R2_KEEP_DEPLOYMENTS: "3"
+          LIVE_WORKER_URL: https://leadership-legacy.meauxbility.workers.dev
         run: npm run r2:prune
 
       - name: Deploy Worker

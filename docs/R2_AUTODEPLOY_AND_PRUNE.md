@@ -1,6 +1,24 @@
 # R2 Autodeploy and Prune
 
-This repo is configured so pushes to `main` can build, upload fresh app assets to R2, prune old deployments, and deploy the Worker.
+The previous prune implementation attempted to call:
+
+```bash
+npx wrangler r2 object list leadership-legacy --prefix deployments/ --remote --json
+```
+
+Wrangler v4.88.0 does not support that `object list` command shape.
+
+The fixed prune flow now uses the deployed Worker API:
+
+```txt
+GET /api/r2/list?prefix=deployments/
+```
+
+Then it deletes old deployment objects using the supported command:
+
+```bash
+npx wrangler r2 object delete leadership-legacy/<key> --remote
+```
 
 ## R2 Layout
 
@@ -9,62 +27,22 @@ leadership-legacy/
   live/
     index.html
     dashboard.html
-    assets/...
+    assets/
     manifest.json
 
   deployments/
     <git-sha>/
       index.html
       dashboard.html
-      assets/...
+      assets/
       manifest.json
 
     _latest.json
 ```
 
-## What Gets Uploaded
+## Commands
 
-The script uploads every file from:
-
-```txt
-dist/
-```
-
-to both:
-
-```txt
-r2://leadership-legacy/deployments/<git-sha>/
-r2://leadership-legacy/live/
-```
-
-## Pruning
-
-By default, pruning keeps the latest 3 deployment snapshots:
-
-```txt
-R2_KEEP_DEPLOYMENTS=3
-```
-
-It deletes older objects under:
-
-```txt
-deployments/<old-sha>/
-```
-
-It does not delete:
-
-```txt
-live/
-deployments/_latest.json
-cms/
-assets/
-docs/
-analytics/
-```
-
-## Local Commands
-
-Build and upload:
+Publish fresh build:
 
 ```bash
 npm run build
@@ -77,50 +55,26 @@ Prune old deployment snapshots:
 npm run r2:prune
 ```
 
-Full deploy:
+Full local deployment:
 
 ```bash
 npm run deploy:full
 ```
 
-## GitHub Secrets Required
+## Safety
 
-Add these to GitHub repo secrets:
+Pruning deletes only old objects under:
 
 ```txt
-CLOUDFLARE_API_TOKEN
-CLOUDFLARE_ACCOUNT_ID
+deployments/<old-sha>/
 ```
 
-The token needs permission for:
+It does not delete:
 
 ```txt
-Workers Scripts: Edit
-Account R2 Storage: Edit
-Account Settings: Read
-```
-
-Depending on the Cloudflare token UI, you may also need:
-
-```txt
-Workers Routes: Edit
-D1: Edit
-```
-
-## Important
-
-`dist/` remains gitignored. Built assets live in R2 and Worker Assets, not Git.
-
-`node_modules/` remains gitignored.
-
-Source of truth remains:
-
-```txt
-src/
-public/
+live/
+cms/
+assets/
 docs/
-scripts/
-sql/
-package.json
-wrangler config
+analytics/
 ```
