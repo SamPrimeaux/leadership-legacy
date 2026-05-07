@@ -40,7 +40,15 @@ function extractResponseText(data) {
     }
   }
 
-  return chunks.join("\\n").trim();
+  return chunks.join("\n").trim();
+}
+
+function stripCodeFence(text) {
+  if (!text) return "";
+  return text
+    .replace(/^```[a-zA-Z0-9_-]*\s*/, "")
+    .replace(/```\s*$/, "")
+    .trim();
 }
 
 async function callOpenAI(env, payload) {
@@ -56,18 +64,18 @@ async function callOpenAI(env, payload) {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "authorization": `Bearer ${env.OPENAI_API_KEY}`
+      authorization: `Bearer ${env.OPENAI_API_KEY}`
     },
     body: JSON.stringify(payload)
   });
 
-  const text = await response.text();
+  const raw = await response.text();
   let data;
 
   try {
-    data = JSON.parse(text);
+    data = JSON.parse(raw);
   } catch {
-    data = { raw: text };
+    data = { raw };
   }
 
   if (!response.ok) {
@@ -85,15 +93,6 @@ async function callOpenAI(env, payload) {
     data,
     text: extractResponseText(data)
   };
-}
-
-function stripCodeFence(text) {
-  if (!text) return "";
-  return text
-    .replace(/^```[a-zA-Z0-9_-]*\\s*/.trim(), "")
-    .replace(/^```[a-zA-Z0-9_-]*\\s*/, "")
-    .replace(/```\\s*$/, "")
-    .trim();
 }
 
 async function readR2Text(env, key) {
@@ -117,59 +116,6 @@ export default {
         r2Binding: Boolean(env.WEBSITE),
         timestamp: new Date().toISOString()
       });
-    }
-
-    if (pathname === "/api/r2/status") {
-      let readme = null;
-      try {
-        readme = await readR2Text(env, "README.txt");
-      } catch (error) {
-        return json({
-          ok: false,
-          binding: "WEBSITE",
-          bucket: env.R2_BUCKET_NAME || "leadership-legacy",
-          error: error.message
-        }, 500);
-      }
-
-      return json({
-        ok: true,
-        binding: "WEBSITE",
-        bucket: env.R2_BUCKET_NAME || "leadership-legacy",
-        publicDevelopmentUrl: env.R2_PUBLIC_DEV_URL,
-        readmeExists: Boolean(readme),
-        readmePreview: readme ? readme.slice(0, 240) : null
-      });
-    }
-
-    if (pathname === "/api/r2/list") {
-      if (!env.WEBSITE) return json({ ok: false, error: "WEBSITE R2 binding missing." }, 500);
-      const prefix = url.searchParams.get("prefix") || "";
-      const listed = await env.WEBSITE.list({ prefix, limit: 100 });
-      return json({
-        ok: true,
-        prefix,
-        objects: listed.objects.map((object) => ({
-          key: object.key,
-          size: object.size,
-          uploaded: object.uploaded,
-          etag: object.etag
-        })),
-        truncated: listed.truncated,
-        cursor: listed.cursor || null
-      });
-    }
-
-    if (pathname.startsWith("/api/r2/object/")) {
-      if (!env.WEBSITE) return json({ ok: false, error: "WEBSITE R2 binding missing." }, 500);
-      const key = decodeURIComponent(pathname.replace("/api/r2/object/", ""));
-      const object = await env.WEBSITE.get(key);
-      if (!object) return json({ ok: false, error: "R2 object not found", key }, 404);
-      const headers = new Headers();
-      object.writeHttpMetadata(headers);
-      headers.set("etag", object.httpEtag);
-      headers.set("cache-control", "public, max-age=300");
-      return new Response(object.body, { headers });
     }
 
     if (pathname === "/api/ai/providers") {
@@ -198,47 +144,39 @@ export default {
 
     if (pathname === "/api/openai/code" && request.method === "POST") {
       const body = await readJson(request);
-      const mode = body.mode || "generate";
-      const filename = body.filename || "src/App.jsx";
-      const language = body.language || "javascript";
-      const currentCode = body.code || "";
-      const instruction = body.instruction || "Improve this file.";
       const model = body.model || "gpt-5.4-mini";
+      const filename = body.filename || "routes/services.jsx";
+      const language = body.language || "javascript";
+      const code = body.code || "";
+      const instruction = body.instruction || "Improve this file.";
 
       if (["gpt-5.5", "gpt-5.5-pro", "gpt-5.4-pro"].includes(model)) {
         return json({
           ok: false,
-          error: "This model is blocked by project policy.",
-          blockedModels: ["gpt-5.5", "gpt-5.5-pro", "gpt-5.4-pro"]
+          error: "This model is blocked by project policy."
         }, 400);
       }
 
-      const developer = [
-        "You are the Leadership Legacy dashboard coding agent.",
-        "Return only the final complete file contents unless the user explicitly asks for explanation.",
-        "Do not include markdown fences.",
-        "Do not invent secrets.",
-        "Do not expose API keys.",
-        "Prefer production-ready React, Vite, Cloudflare Worker, and CMS dashboard patterns.",
-        "Use accessible markup and clean Cursor-like UI conventions."
-      ].join("\\n");
-
-      const user = [
-        `Mode: ${mode}`,
-        `Filename: ${filename}`,
-        `Language: ${language}`,
-        "",
-        "Instruction:",
-        instruction,
-        "",
-        "Current file contents:",
-        currentCode || "(empty file)"
-      ].join("\\n");
-
       const result = await callOpenAI(env, {
         model,
-        instructions: developer,
-        input: user,
+        instructions: [
+          "You are Agent Connor inside the Leadership Legacy IDE dashboard.",
+          "Return only final complete file contents.",
+          "Do not include markdown fences.",
+          "Do not expose secrets.",
+          "Prefer production-ready React/Vite/Cloudflare/CMS patterns.",
+          "Keep UI tight, practical, and IDE-like."
+        ].join("\n"),
+        input: [
+          `Filename: ${filename}`,
+          `Language: ${language}`,
+          "",
+          "Instruction:",
+          instruction,
+          "",
+          "Current file:",
+          code || "(empty)"
+        ].join("\n"),
         max_output_tokens: 6000
       });
 
@@ -251,37 +189,47 @@ export default {
         model,
         filename,
         language,
-        mode,
         code: stripCodeFence(result.text),
         responseId: result.data?.id || null,
         usage: result.data?.usage || null
       });
     }
 
-    if (pathname === "/api/openai/chat" && request.method === "POST") {
-      const body = await readJson(request);
-      const model = body.model || "gpt-5.4-mini";
-      const message = body.message || "Explain this project.";
-
-      if (["gpt-5.5", "gpt-5.5-pro", "gpt-5.4-pro"].includes(model)) {
-        return json({ ok: false, error: "Blocked model by policy." }, 400);
+    if (pathname === "/api/r2/status") {
+      let readme = null;
+      try {
+        readme = await readR2Text(env, "README.txt");
+      } catch (error) {
+        return json({
+          ok: false,
+          binding: "WEBSITE",
+          error: error.message
+        }, 500);
       }
-
-      const result = await callOpenAI(env, {
-        model,
-        instructions: "You are a concise project assistant for the Leadership Legacy Digital dashboard. Never reveal secrets.",
-        input: message,
-        max_output_tokens: 2500
-      });
-
-      if (!result.ok) return json(result, result.status || 500);
 
       return json({
         ok: true,
-        model,
-        text: result.text,
-        responseId: result.data?.id || null,
-        usage: result.data?.usage || null
+        binding: "WEBSITE",
+        bucket: env.R2_BUCKET_NAME || "leadership-legacy",
+        publicDevelopmentUrl: env.R2_PUBLIC_DEV_URL,
+        readmeExists: Boolean(readme),
+        readmePreview: readme ? readme.slice(0, 240) : null
+      });
+    }
+
+    if (pathname === "/api/r2/list") {
+      if (!env.WEBSITE) return json({ ok: false, error: "WEBSITE R2 binding missing." }, 500);
+      const prefix = url.searchParams.get("prefix") || "";
+      const listed = await env.WEBSITE.list({ prefix, limit: 100 });
+      return json({
+        ok: true,
+        prefix,
+        objects: listed.objects.map((object) => ({
+          key: object.key,
+          size: object.size,
+          uploaded: object.uploaded,
+          etag: object.etag
+        }))
       });
     }
 
