@@ -17,3 +17,5 @@ test-results/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+.r2-deployment-manifest.json

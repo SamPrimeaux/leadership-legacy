@@ -1,26 +1,35 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const useLocalServer = process.env.LOCAL_E2E === "1";
+const baseURL =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  (useLocalServer
+    ? "http://127.0.0.1:5173"
+    : "https://leadership-legacy.meauxbility.workers.dev");
+
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: 45_000,
+  timeout: 60_000,
   expect: {
-    timeout: 10_000
+    timeout: 15_000
   },
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: [["html"], ["list"]],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:5173",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure"
   },
-  webServer: {
-    command: "npm run dev -- --host 127.0.0.1",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000
-  },
+  webServer: useLocalServer
+    ? {
+        command: "npm run dev -- --host 127.0.0.1",
+        url: "http://127.0.0.1:5173",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000
+      }
+    : undefined,
   projects: [
     {
       name: "chromium",
