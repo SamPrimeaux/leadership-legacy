@@ -14,7 +14,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "r2:publish": "node scripts/publish-dist-to-r2.mjs",
+    "r2:prune": "node scripts/prune-r2-deployments.mjs",
+    "deploy:full": "npm run build && npm run r2:publish && npm run r2:prune && wrangler deploy"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
