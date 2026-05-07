@@ -51,6 +51,10 @@ function stripCodeFence(text) {
     .trim();
 }
 
+function isLikelyTextKey(key) {
+  return /\.(txt|md|json|jsonc|js|jsx|ts|tsx|css|html|svg|xml|yml|yaml|sql|csv|toml|env|log)$/i.test(key);
+}
+
 async function callOpenAI(env, payload) {
   if (!env.OPENAI_API_KEY) {
     return {
@@ -136,10 +140,77 @@ export default {
             secretName: "ANTHROPIC_API_KEY",
             status: env.ANTHROPIC_API_KEY ? "configured" : "missing_secret",
             models: ["claude-sonnet", "claude-haiku"]
+          },
+          {
+            key: "gemini",
+            displayName: "Gemini",
+            secretName: "GEMINI_API_KEY",
+            status: env.GEMINI_API_KEY ? "configured" : "missing_secret",
+            models: ["gemini-pro", "gemini-flash"]
           }
         ],
         blockedModels: ["gpt-5.5", "gpt-5.5-pro", "gpt-5.4-pro"]
       });
+    }
+
+    if (pathname === "/api/github/status") {
+      return json({
+        ok: true,
+        configured: Boolean(env.GITHUB_CLIENT_ID || env.GITHUB_APP_ID),
+        oauthConfigured: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+        appConfigured: Boolean(env.GITHUB_APP_ID && env.GITHUB_APP_PRIVATE_KEY),
+        requiredSecrets: [
+          "GITHUB_CLIENT_ID",
+          "GITHUB_CLIENT_SECRET",
+          "GITHUB_APP_ID",
+          "GITHUB_APP_PRIVATE_KEY",
+          "GITHUB_WEBHOOK_SECRET"
+        ]
+      });
+    }
+
+    if (pathname === "/api/oauth/github/start") {
+      if (!env.GITHUB_CLIENT_ID) {
+        return json({
+          ok: false,
+          error: "GitHub OAuth is not configured yet.",
+          requiredSecret: "GITHUB_CLIENT_ID"
+        }, 501);
+      }
+
+      const redirect = new URL("https://github.com/login/oauth/authorize");
+      redirect.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
+      redirect.searchParams.set("redirect_uri", `${url.origin}/api/oauth/github/callback`);
+      redirect.searchParams.set("scope", "repo read:user user:email");
+      redirect.searchParams.set("state", crypto.randomUUID());
+      return Response.redirect(redirect.toString(), 302);
+    }
+
+    if (pathname === "/api/oauth/google/start") {
+      if (!env.GOOGLE_CLIENT_ID) {
+        return json({
+          ok: false,
+          error: "Google OAuth is not configured yet.",
+          requiredSecret: "GOOGLE_CLIENT_ID"
+        }, 501);
+      }
+
+      const redirect = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+      redirect.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
+      redirect.searchParams.set("redirect_uri", env.GOOGLE_REDIRECT_URI || `${url.origin}/api/oauth/google/callback`);
+      redirect.searchParams.set("response_type", "code");
+      redirect.searchParams.set("scope", [
+        "openid",
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/drive.readonly",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.compose"
+      ].join(" "));
+      redirect.searchParams.set("access_type", "offline");
+      redirect.searchParams.set("prompt", "consent");
+      redirect.searchParams.set("state", crypto.randomUUID());
+      return Response.redirect(redirect.toString(), 302);
     }
 
     if (pathname === "/api/openai/code" && request.method === "POST") {
@@ -229,8 +300,48 @@ export default {
           size: object.size,
           uploaded: object.uploaded,
           etag: object.etag
-        }))
+        })),
+        truncated: listed.truncated,
+        cursor: listed.cursor || null
       });
+    }
+
+    if (pathname === "/api/r2/text") {
+      if (!env.WEBSITE) return json({ ok: false, error: "WEBSITE R2 binding missing." }, 500);
+      const key = url.searchParams.get("key") || "";
+      if (!key) return json({ ok: false, error: "Missing key." }, 400);
+      if (!isLikelyTextKey(key)) {
+        return json({
+          ok: false,
+          error: "This object does not look like a text/code file.",
+          key
+        }, 415);
+      }
+
+      const object = await env.WEBSITE.get(key);
+      if (!object) return json({ ok: false, error: "Object not found.", key }, 404);
+
+      const text = await object.text();
+      return json({
+        ok: true,
+        key,
+        size: object.size,
+        uploaded: object.uploaded,
+        httpEtag: object.httpEtag,
+        text
+      });
+    }
+
+    if (pathname.startsWith("/api/r2/object/")) {
+      if (!env.WEBSITE) return json({ ok: false, error: "WEBSITE R2 binding missing." }, 500);
+      const key = decodeURIComponent(pathname.replace("/api/r2/object/", ""));
+      const object = await env.WEBSITE.get(key);
+      if (!object) return json({ ok: false, error: "R2 object not found", key }, 404);
+      const headers = new Headers();
+      object.writeHttpMetadata(headers);
+      headers.set("etag", object.httpEtag);
+      headers.set("cache-control", "public, max-age=300");
+      return new Response(object.body, { headers });
     }
 
     if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
