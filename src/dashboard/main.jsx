@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import DashboardApp from "./DashboardApp.jsx";
 import "./dashboard.css";
+import "@xterm/xterm/css/xterm.css";
 
 createRoot(document.getElementById("dashboard-root")).render(
   <React.StrictMode>

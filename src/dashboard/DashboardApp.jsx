@@ -1,10 +1,12 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { DashboardShell } from "./layouts/DashboardShell.jsx";
+import { IDELayout } from "./layouts/IDELayout.jsx";
 import { DashboardAuthGate } from "./components/DashboardAuthGate.jsx";
-import { DashboardHome } from "./pages/DashboardHome.jsx";
+import { IDEHome } from "./pages/IDEHome.jsx";
+import { IDEWorkspace } from "./pages/IDEWorkspace.jsx";
 import { CMSPages } from "./pages/CMSPages.jsx";
 import { CMSPageEditor } from "./pages/CMSPageEditor.jsx";
 import { MediaLibrary } from "./pages/MediaLibrary.jsx";
+import { R2Storage } from "./pages/R2Storage.jsx";
 import { CaseStudies } from "./pages/CaseStudies.jsx";
 import { Services } from "./pages/Services.jsx";
 import { Leads } from "./pages/Leads.jsx";
@@ -13,24 +15,23 @@ import { Analytics } from "./pages/Analytics.jsx";
 import { Publishing } from "./pages/Publishing.jsx";
 import { Settings } from "./pages/Settings.jsx";
 import { AIProviders } from "./pages/AIProviders.jsx";
-import { R2Storage } from "./pages/R2Storage.jsx";
-import { DevCockpit } from "./pages/DevCockpit.jsx";
 import { NotFoundDashboard } from "./pages/NotFoundDashboard.jsx";
 
 export default function DashboardApp() {
   return (
     <DashboardAuthGate>
-      <DashboardShell>
+      <IDELayout>
         <Routes>
-          <Route path="/dashboard" element={<DashboardHome />} />
+          <Route path="/dashboard" element={<IDEHome />} />
+          <Route path="/dashboard/dev" element={<IDEWorkspace />} />
+          <Route path="/dashboard/dev/editor" element={<IDEWorkspace startTab="editor" />} />
+          <Route path="/dashboard/dev/terminal" element={<IDEWorkspace startTab="terminal" />} />
+          <Route path="/dashboard/dev/agent" element={<IDEWorkspace startTab="agent" />} />
           <Route path="/dashboard/pages" element={<CMSPages />} />
           <Route path="/dashboard/pages/:pageId" element={<CMSPageEditor />} />
           <Route path="/dashboard/sections" element={<CMSPages />} />
           <Route path="/dashboard/media" element={<MediaLibrary />} />
           <Route path="/dashboard/storage" element={<R2Storage />} />
-              <Route path="/dashboard/dev" element={<DevCockpit view="overview" />} />
-              <Route path="/dashboard/dev/editor" element={<DevCockpit view="editor" />} />
-              <Route path="/dashboard/dev/tunnel" element={<DevCockpit view="tunnel" />} />
           <Route path="/dashboard/case-studies" element={<CaseStudies />} />
           <Route path="/dashboard/case-studies/:caseStudyId" element={<CaseStudies />} />
           <Route path="/dashboard/services" element={<Services />} />
@@ -48,7 +49,7 @@ export default function DashboardApp() {
           <Route path="/dashboard/login" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFoundDashboard />} />
         </Routes>
-      </DashboardShell>
+      </IDELayout>
     </DashboardAuthGate>
   );
 }
