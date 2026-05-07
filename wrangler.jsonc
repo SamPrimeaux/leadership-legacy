@@ -21,5 +21,18 @@
   },
   "observability": {
     "enabled": true
+  },
+  "r2_buckets": [
+    {
+      "binding": "WEBSITE",
+      "bucket_name": "leadership-legacy"
+    }
+  ],
+  "vars": {
+    "R2_PUBLIC_DEV_URL": "https://pub-d426ded97b90451886c5cc7870ae9f17.r2.dev",
+    "R2_BUCKET_NAME": "leadership-legacy",
+    "R2_S3_ENDPOINT": "https://ede6590ac0d2fb7daf155b35653457b2.r2.cloudflarestorage.com/leadership-legacy",
+    "R2_CATALOG_URI": "https://catalog.cloudflarestorage.com/ede6590ac0d2fb7daf155b35653457b2/leadership-legacy",
+    "R2_WAREHOUSE_NAME": "ede6590ac0d2fb7daf155b35653457b2_leadership-legacy"
   }
 }

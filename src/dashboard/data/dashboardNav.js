@@ -10,7 +10,8 @@ import {
   BarChart3,
   Rocket,
   Settings,
-  BrainCircuit
+  BrainCircuit,
+      Database
 } from "lucide-react";
 
 export const dashboardNav = [
@@ -24,6 +25,7 @@ export const dashboardNav = [
   { label: "Forms", href: "/dashboard/forms", icon: ClipboardList },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { label: "Publishing", href: "/dashboard/publishing", icon: Rocket },
-  { label: "AI Providers", href: "/dashboard/settings/ai-providers", icon: BrainCircuit },
+  { label: "AI Providers", href: "/dashboard/settings/ai-providers", icon: BrainCircuit,
+      Database },
   { label: "Settings", href: "/dashboard/settings", icon: Settings }
 ];

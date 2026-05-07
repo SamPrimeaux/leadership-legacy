@@ -12,6 +12,7 @@ import { Analytics } from "./pages/Analytics.jsx";
 import { Publishing } from "./pages/Publishing.jsx";
 import { Settings } from "./pages/Settings.jsx";
 import { AIProviders } from "./pages/AIProviders.jsx";
+    import { R2Storage } from "./pages/R2Storage.jsx";
 import { NotFoundDashboard } from "./pages/NotFoundDashboard.jsx";
 
 export default function DashboardApp() {
@@ -37,6 +38,7 @@ export default function DashboardApp() {
         <Route path="/dashboard/settings/navigation" element={<Settings section="navigation" />} />
         <Route path="/dashboard/settings/seo" element={<Settings section="seo" />} />
         <Route path="/dashboard/settings/ai-providers" element={<AIProviders />} />
+            <Route path="/dashboard/storage" element={<R2Storage />} />
         <Route path="/dashboard/login" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<NotFoundDashboard />} />
       </Routes>
