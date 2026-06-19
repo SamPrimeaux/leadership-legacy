@@ -64,6 +64,16 @@ Use this checklist when Sam and Connor sit down to finish connecting the product
 - [ ] RLS strategy reviewed
 - [ ] RAG/analytics tables verified
 
+## Email (Resend + inbox)
+
+- [ ] Read `docs/EMAIL_SYSTEM_TEMPLATE.md` (start here — inbound/outbound/automated primer)
+- [ ] Run `docs/email-system/001_schema.sql` and `002_seed_templates.sql` after D1 is bound
+- [ ] Resend domain verified for `leadershiplegacydigital.com`
+- [ ] `RESEND_API_KEY` stored in Cloudflare secrets
+- [ ] Test outbound received at connordmcneely@leadershiplegacydigital.com
+- [ ] Inbound webhook configured (Phase 4 in template doc)
+- [ ] `/dashboard/mail` wired to `/api/email/*` (port from companionscpas reference)
+
 ## OpenAI
 
 - [ ] Sam’s temporary key noted

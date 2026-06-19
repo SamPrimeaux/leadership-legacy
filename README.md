@@ -669,6 +669,8 @@ docs/AGENT_CHAT_VS_CODE_MODE.md
 Integration guides:
 
 ```txt
+docs/EMAIL_SYSTEM_TEMPLATE.md          Connor install guide (inbound/outbound/automated)
+docs/email-system/                     D1 schema + HTML template seeds
 docs/integrations/GITHUB_SETUP_PLAYBOOK.md
 docs/integrations/GOOGLE_DRIVE_GMAIL_SETUP_PLAYBOOK.md
 docs/integrations/MCP_TOOLS_PLAYBOOK.md
